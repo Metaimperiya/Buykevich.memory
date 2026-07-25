@@ -1,42 +1,33 @@
 import * as THREE from 'three';
 
-export class TombManager {
-    constructor(scene) {
-        this.scene = scene;
-        this.stoneMat = new THREE.MeshStandardMaterial({ color: 0x2a2d32, roughness: 0.9 });
-        this.marbleMat = new THREE.MeshStandardMaterial({ color: 0x111318, roughness: 0.3, metalness: 0.5 });
-        this.candleLightMat = new THREE.MeshBasicMaterial({ color: 0xffaa33 });
+export class KeyboardControls {
+    constructor(camera) {
+        this.camera = camera;
+        this.keys = { w: false, a: false, s: false, d: false, q: false, e: false, shift: false };
+        
+        window.addEventListener('keydown', (e) => this.onKey(e, true));
+        window.addEventListener('keyup', (e) => this.onKey(e, false));
     }
 
-    addCandle(group, x, z) {
-        const candle = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.4, 8), new THREE.MeshBasicMaterial({ color: 0xeeeedd }));
-        candle.position.set(x, 0.2, z);
-        const flame = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), this.candleLightMat);
-        flame.position.set(x, 0.45, z);
-        const light = new THREE.PointLight(0xffaa33, 1.5, 6);
-        light.position.set(x, 0.5, z);
-        group.add(candle, flame, light);
+    onKey(e, state) {
+        const key = e.key.toLowerCase();
+        if (this.keys.hasOwnProperty(key)) {
+            this.keys[key] = state;
+        }
     }
 
-    createTomb(x, z, name, dates) {
-        const group = new THREE.Group();
-        group.position.set(x, 0, z);
-        const base = new THREE.Mesh(new THREE.BoxGeometry(2, 0.3, 3), this.stoneMat);
-        base.position.y = 0.15;
-        const stele = new THREE.Mesh(new THREE.BoxGeometry(1.6, 2.8, 0.3), this.marbleMat);
-        stele.position.set(0, 1.55, -1.1);
-        group.add(base, stele);
-        this.addCandle(group, 0.6, 0.8);
-        group.userData = { name, dates, loc: '✦ ЗЕМЛЯ ✦' };
-        this.scene.add(group);
-        return group;
-    }
+    update() {
+        const speed = this.keys.shift ? 1.5 : 0.5;
+        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
 
-    initDefaultTombs() {
-        return [
-            this.createTomb(-15, 5, 'Иван Смирнов', '1952 — 2015'),
-            this.createTomb(0, 5, 'Анна Петрова', '1980 — 2021'),
-            this.createTomb(15, 5, 'Семья Волковых', '1945 — 2018')
-        ];
+        if (this.keys.w) this.camera.position.addScaledVector(forward, speed);
+        if (this.keys.s) this.camera.position.addScaledVector(forward, -speed);
+        if (this.keys.a) this.camera.position.addScaledVector(right, -speed);
+        if (this.keys.d) this.camera.position.addScaledVector(right, speed);
+        if (this.keys.e) this.camera.position.y += speed; // Взлет в небо
+        if (this.keys.q) this.camera.position.y -= speed; // Спуск
+        
+        if (this.camera.position.y < 0.5) this.camera.position.y = 0.5;
     }
 }
