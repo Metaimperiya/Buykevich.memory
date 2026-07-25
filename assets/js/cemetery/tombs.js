@@ -1,16 +1,33 @@
-export function createCemetery(scene) {
-    const graniteMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.3, metalness: 0.8 });
-    const candleLightMat = new THREE.MeshBasicMaterial({ color: 0xffa500 });
+const graniteMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.3, metalness: 0.8 });
+const candleLightMat = new THREE.MeshBasicMaterial({ color: 0xffa500 });
 
-    function addCandle(group, x, z) {
-        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1.2, 10), graniteMat);
-        base.position.set(x, 0.6, z);
-        const flame = new THREE.Mesh(new THREE.SphereGeometry(0.25, 6, 6), candleLightMat);
-        flame.position.set(x, 1.5, z);
-        const light = new THREE.PointLight(0xffaa00, 1.5, 10);
-        light.position.set(x, 1.8, z);
-        group.add(base, flame, light);
+function createNoiseTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    for (let x = 0; x < 128; x++) {
+        for (let y = 0; y < 128; y++) {
+            const val = Math.floor(Math.random() * 255);
+            ctx.fillStyle = `rgb(${val},${val},${val})`;
+            ctx.fillRect(x, y, 1, 1);
+        }
     }
+    return new THREE.CanvasTexture(canvas);
+}
+const noiseTex = createNoiseTexture();
+
+function addCandle(group, x, z) {
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1.2, 10), graniteMat);
+    base.position.set(x, 0.6, z);
+    const flame = new THREE.Mesh(new THREE.SphereGeometry(0.25, 6, 6), candleLightMat);
+    flame.position.set(x, 1.5, z);
+    const light = new THREE.PointLight(0xffaa00, 1.5, 10);
+    light.position.set(x, 1.8, z);
+    group.add(base, flame, light);
+}
+
+export function initCemetery(scene) {
+    const earthGroups = [];
 
     function createClassicTomb(x, z) {
         const group = new THREE.Group();
@@ -70,6 +87,23 @@ export function createCemetery(scene) {
         return group;
     }
 
+    function createHoloTomb(x, z) {
+        const group = new THREE.Group();
+        group.position.set(x, 0, z);
+        const base = new THREE.Mesh(new THREE.BoxGeometry(7, 1.2, 4), graniteMat);
+        base.position.y = 0.6;
+        const holoGeo = new THREE.BoxGeometry(5, 9, 0.6);
+        const holoMat = new THREE.MeshBasicMaterial({
+            map: noiseTex, color: 0x00f3ff, transparent: true, opacity: 0.5
+        });
+        const holoStele = new THREE.Mesh(holoGeo, holoMat);
+        holoStele.position.set(0, 5.5, 0);
+        group.add(base, holoStele);
+        scene.add(group);
+        group.userData = { name: 'Голографический памятник', dates: '—', type: 'earth' };
+        return group;
+    }
+
     function createMemoryWall(x, z) {
         const group = new THREE.Group();
         group.position.set(x, 0, z);
@@ -89,12 +123,14 @@ export function createCemetery(scene) {
         return group;
     }
 
-    // РАССАДКА МОГИЛ
-    const g1 = createClassicTomb(-20, 10);
-    const g2 = createCrossTomb(0, 10);
-    const g3 = createDoubleTomb(20, 10);
-    const g6 = createMemoryWall(0, -35);
-    
-    console.log('🪦 Cemetery created');
-    return [g1, g2, g3, g6];
+    earthGroups.push(
+        createClassicTomb(-20, 10),
+        createCrossTomb(0, 10),
+        createDoubleTomb(20, 10),
+        createHoloTomb(-10, -15),
+        createHoloTomb(10, -15),
+        createMemoryWall(0, -35)
+    );
+
+    return { earthGroups, candleLightMat };
 }
