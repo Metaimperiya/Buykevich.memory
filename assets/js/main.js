@@ -1,18 +1,26 @@
-/**
- * Memorial Park — Главный входной файл
- * 
- * Сборка всех модулей в единое приложение
- */
+import { initScene } from './core/scene.js';
+import { createCemetery } from './cemetery/tombs.js';
+import { createGalaxy } from './galaxy/galaxy-system.js';
+import { initFPSCamera } from './controls/fps-camera.js';
+import { initKeyboard } from './controls/keyboard.js';
 
-// TODO: Импортировать модули после разбивки
-// import { initScene } from './core/scene.js';
-// import { createCemetery } from './cemetery/tombs.js';
-// import { createGalaxy } from './galaxy/galaxy-system.js';
-// import { initControls } from './controls/fps-camera.js';
-// import { initAudio } from './media/audio-controller.js';
+console.log('🚀 Memorial Park starting...');
 
-console.log('🪦 Memorial Park — Initializing...');
-console.log('📁 Project structure ready!');
-console.log('📷 Add photos to assets/photos/');
-console.log('🎬 Add videos to assets/videos/');
-console.log('🎵 Add audio to assets/audio/');
+const { scene, camera, renderer } = initScene();
+
+createCemetery(scene);
+const galaxyData = createGalaxy(scene);
+
+initFPSCamera(camera);
+const updateKeyboard = initKeyboard(camera);
+
+// Анимационный цикл
+function animate() {
+    requestAnimationFrame(animate);
+    updateKeyboard();
+    renderer.render(scene, camera);
+}
+
+animate();
+
+console.log('✅ Memorial Park ready!');
