@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function animate(time) {
         requestAnimationFrame(animate);
 
-        // Обновляем позицию игрока (WASD)
         if (cameraControls && cameraControls.update) {
             cameraControls.update();
         }
