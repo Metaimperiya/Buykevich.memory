@@ -1,3 +1,5 @@
+import * as THREE from '../three.min.js';
+
 export function initFpsCamera(container, camera) {
     const euler = new THREE.Euler(0, 0, 0, 'YXZ');
     let pitch = 0, yaw = 0;
