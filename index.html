@@ -3,20 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Memorial Park — 3D Cemetery + Galaxy</title>
-    
-    <!-- CSS -->
+    <title>Memorial Park — FPS Controls</title>
+    <link rel="icon" href="data:,">
     <link rel="stylesheet" href="assets/css/style.css">
-    
-    <!-- Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <!-- UI -->
     <div class="ui-hud">
-        [SYSTEM]: MEMORIAL_PARK<br>
+        [SYSTEM]: FPS_MEMORIAL_PARK<br>
         <span class="highlight">[GROUND]: CEMETERY</span><br>
         <span class="sky">[SKY]: GALAXY_MEMORIALS</span><br>
         <span class="key">[FPS]: CLICK TO LOCK MOUSE</span>
@@ -48,42 +43,7 @@
 
     <div id="canvas-container"></div>
 
-    <!-- JavaScript -->
-    <script type="module">
-        // =========================================
-        // ИМПОРТЫ (когда будет разбито на файлы)
-        // =========================================
-        // import { initScene, camera, renderer, scene } from './src/core/scene.js';
-        // import { createCemetery } from './src/cemetery/tombs.js';
-        // import { createGalaxy } from './src/galaxy/galaxy-system.js';
-        // import { FPSCamera } from './src/controls/fps-camera.js';
-        // import { KeyboardControls } from './src/controls/keyboard.js';
-        // import { TouchControls } from './src/controls/touch.js';
-        // import { createTextures } from './src/utils/textures.js';
-        // import { GraveHover } from './src/utils/raycaster.js';
-
-        // =========================================
-        // ПОКА ВСЁ В ОДНОМ ФАЙЛЕ (ДЛЯ РАБОТЫ)
-        // =========================================
-        // ... (весь код из предыдущей версии)
-        // ВСЯ ЛОГИКА ЗДЕСЬ
-        // =========================================
-
-        console.log('🪦 Memorial Park — Ready!');
-        console.log('📁 Структура для GitHub:');
-        console.log('   📄 index.html');
-        console.log('   📁 assets/');
-        console.log('      📁 css/ → style.css');
-        console.log('      📁 js/ → script.js');
-        console.log('      📁 textures/ → noise.png');
-        console.log('   📁 src/');
-        console.log('      📁 cemetery/ → tombs.js, candles.js, memory-wall.js');
-        console.log('      📁 galaxy/ → galaxy-system.js, galaxy-particles.js');
-        console.log('      📁 controls/ → fps-camera.js, keyboard.js, touch.js');
-        console.log('      📁 utils/ → textures.js, raycaster.js');
-        console.log('   📁 docs/ → instructions.md');
-        console.log('   📄 README.md');
-    </script>
-
+    <!-- Загружаем основной модуль проекта -->
+    <script type="module" src="assets/js/main.js"></script>
 </body>
 </html>
