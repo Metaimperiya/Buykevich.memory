@@ -1,3 +1,5 @@
+import * as THREE from '../three.min.js';
+
 const graniteMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.3, metalness: 0.8 });
 const candleLightMat = new THREE.MeshBasicMaterial({ color: 0xffa500 });
 
