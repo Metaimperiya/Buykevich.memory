@@ -1,5 +1,3 @@
-import * as THREE from '../three.min.js';
-
 export function initScene() {
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
