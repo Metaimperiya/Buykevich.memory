@@ -3,7 +3,13 @@ export function initFpsCamera(container, camera) {
     let pitch = 0, yaw = 0;
     let isPointerLocked = false;
 
-    // Клик по экрану — захват курсора
+    // Состояние клавиш
+    const keys = {
+        KeyW: false, KeyS: false, KeyA: false, KeyD: false,
+        KeyQ: false, KeyE: false, ShiftLeft: false, ShiftRight: false
+    };
+
+    // Клик по экрану — захват мыши
     container.addEventListener('click', () => {
         if (!isPointerLocked) container.requestPointerLock();
     });
@@ -13,7 +19,7 @@ export function initFpsCamera(container, camera) {
         container.style.cursor = isPointerLocked ? 'none' : 'grab';
     });
 
-    // Движение мыши (вращение камеры)
+    // Поворот мыши
     document.addEventListener('mousemove', (e) => {
         if (!isPointerLocked) return;
         const sensitivity = 0.002;
@@ -24,40 +30,37 @@ export function initFpsCamera(container, camera) {
         camera.quaternion.setFromEuler(euler);
     });
 
-    // Колёсико — полет вперед/назад
-    container.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        const delta = e.deltaY > 0 ? 1 : -1;
-        const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-        camera.position.addScaledVector(dir, delta * 0.8);
-        if (camera.position.y < 0.5) camera.position.y = 0.5;
-    }, { passive: false });
+    // Нажатия клавиш ходьбы
+    window.addEventListener('keydown', (e) => {
+        if (e.code in keys) keys[e.code] = true;
+    });
 
-    // Touch управление
-    let isTouching = false, lastTouchX = 0, lastTouchY = 0;
-    container.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 1) {
-            isTouching = true;
-            lastTouchX = e.touches[0].clientX;
-            lastTouchY = e.touches[0].clientY;
-        }
-    }, { passive: false });
+    window.addEventListener('keyup', (e) => {
+        if (e.code in keys) keys[e.code] = false;
+    });
 
-    container.addEventListener('touchmove', (e) => {
-        if (e.touches.length === 1 && isTouching) {
-            const dx = e.touches[0].clientX - lastTouchX;
-            const dy = e.touches[0].clientY - lastTouchY;
-            yaw -= dx * 0.005;
-            pitch -= dy * 0.005;
-            pitch = Math.max(-1.5, Math.min(1.5, pitch));
-            euler.set(pitch, yaw, 0, 'YXZ');
-            camera.quaternion.setFromEuler(euler);
-            lastTouchX = e.touches[0].clientX;
-            lastTouchY = e.touches[0].clientY;
-        }
-    }, { passive: false });
+    // Функция обновления позиции (вызывать каждый кадр)
+    function update() {
+        const speed = (keys.ShiftLeft || keys.ShiftRight) ? 0.6 : 0.25;
 
-    container.addEventListener('touchend', () => { isTouching = false; }, { passive: false });
+        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+        forward.y = 0; // Ходим по земле
+        forward.normalize();
+
+        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+        right.y = 0;
+        right.normalize();
+
+        if (keys.KeyW) camera.position.addScaledVector(forward, speed);
+        if (keys.KeyS) camera.position.addScaledVector(forward, -speed);
+        if (keys.KeyD) camera.position.addScaledVector(right, speed);
+        if (keys.KeyA) camera.position.addScaledVector(right, -speed);
+        if (keys.KeyQ) camera.position.y += speed * 0.5; // Вверх
+        if (keys.KeyE) camera.position.y -= speed * 0.5; // Вниз
+
+        // Ограничитель снизу, чтобы под землю не проваливался
+        if (camera.position.y < 1.6) camera.position.y = 1.6;
+    }
 
     function resetCamera() {
         camera.position.set(0, 5, 40);
@@ -66,5 +69,5 @@ export function initFpsCamera(container, camera) {
         camera.quaternion.setFromEuler(euler);
     }
 
-    return { resetCamera, getIsLocked: () => isPointerLocked };
+    return { update, resetCamera, getIsLocked: () => isPointerLocked };
 }
