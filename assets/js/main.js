@@ -1,13 +1,18 @@
-// УДАЛИ ЭТУ СТРОКУ: import * as THREE from './three.min.js';
 import { initScene } from './core/scene.js';
 import { initCemetery } from './cemetery/tombs.js';
 import { initFpsCamera } from './controls/fps-camera.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Инициализация сцены
     const { container, scene, camera, renderer } = initScene();
+
+    // 2. Генерация объектов
     const { earthGroups } = initCemetery(scene);
+
+    // 3. Управление
     const cameraControls = initFpsCamera(container, camera);
 
+    // 4. Интерфейс
     const fpsDisplay = document.getElementById('fpsDisplay');
     const btnReset = document.getElementById('btnReset');
 
@@ -19,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 5. Цикл рендера
     let lastTime = performance.now();
     let frameCount = 0;
 
