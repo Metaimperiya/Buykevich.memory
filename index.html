@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Memorial Park — FPS Controls</title>
+    <!-- Отключаем запрос favicon, чтобы не было лишних ошибок в консоли -->
     <link rel="icon" href="data:,">
+    <!-- Подключаем стили -->
     <link rel="stylesheet" href="assets/css/style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
+    <!-- Интерфейс (HUD) -->
     <div class="ui-hud">
         [SYSTEM]: FPS_MEMORIAL_PARK<br>
         <span class="highlight">[GROUND]: CEMETERY</span><br>
@@ -17,23 +19,28 @@
         <span class="key">[FPS]: CLICK TO LOCK MOUSE</span>
     </div>
 
+    <!-- Прицел в центре экрана -->
     <div id="crosshair">+</div>
 
+    <!-- Панель информации о могиле (скрыта по умолчанию) -->
     <div class="grave-info" id="graveInfo">
         <div class="name" id="graveName">ИМЯ</div>
         <div class="dates" id="graveDates">📅 1945 — 2023</div>
         <div class="location" id="graveLocation">✦ ЗЕМЛЯ ✦</div>
     </div>
 
+    <!-- Подсказка по управлению -->
     <div class="controls-hint">
         <span class="key">W A S D</span> — движение · <span class="key">Q</span> ↑ · <span class="key">E</span> ↓ · <span class="key">Shift</span> — бег · <span class="key">Scroll</span> — лететь
     </div>
 
+    <!-- Счетчик FPS и частиц -->
     <div id="status">
         <span id="fpsDisplay">60 FPS</span><br>
         <span id="particleCount">particles</span>
     </div>
 
+    <!-- Кнопки управления сценой -->
     <div id="controls">
         <button id="btnReset">⟲</button>
         <button id="btnCandles" class="gold active">🕯️</button>
@@ -41,9 +48,20 @@
         <button id="btnFog" class="active">🌫️</button>
     </div>
 
+    <!-- Контейнер для 3D сцены -->
     <div id="canvas-container"></div>
 
-    <!-- Загружаем основной модуль проекта -->
+    <!-- 
+      ВНИМАНИЕ: Сначала подключаем ЛОКАЛЬНУЮ библиотеку Three.js.
+      Она должна загрузиться ДО основного скрипта.
+    -->
+    <script src="assets/js/three.min.js"></script>
+    
+    <!-- 
+      Затем подключаем основной модуль проекта.
+      Важно: script type="module" загружается асинхронно, но выполнится
+      только после того, как обычные скрипты (как three.min.js выше) загрузятся.
+    -->
     <script type="module" src="assets/js/main.js"></script>
 </body>
 </html>
