@@ -1,4 +1,3 @@
-// Создаем текстуру шума
 function createNoiseTexture() {
     if (typeof THREE === 'undefined') return null;
     const canvas = document.createElement('canvas');
@@ -15,12 +14,9 @@ function createNoiseTexture() {
 }
 
 export function initCemetery(scene) {
-    if (typeof THREE === 'undefined') {
-        console.error('THREE.js не загружен!');
-        return { earthGroups: [] };
-    }
+    if (typeof THREE === 'undefined') return { earthGroups: [] };
 
-    const graniteMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.3, metalness: 0.8 });
+    const graniteMat = new THREE.MeshStandardMaterial({ color: 0x0d0d14, roughness: 0.2, metalness: 0.8 });
     const candleLightMat = new THREE.MeshBasicMaterial({ color: 0xffa500 });
     const noiseTex = createNoiseTexture();
 
@@ -43,13 +39,7 @@ export function initCemetery(scene) {
         base.position.y = 0.6;
         const stele = new THREE.Mesh(new THREE.BoxGeometry(6, 10, 1.2), graniteMat);
         stele.position.set(0, 6.2, -1.2);
-        const photoFrame = new THREE.Mesh(
-            new THREE.CylinderGeometry(1.2, 1.2, 0.15, 24),
-            new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 })
-        );
-        photoFrame.rotation.x = Math.PI / 2;
-        photoFrame.position.set(0, 8, -0.5);
-        group.add(base, stele, photoFrame);
+        group.add(base, stele);
         addCandle(group, 2.5, 1.2);
         scene.add(group);
         return group;
@@ -77,15 +67,7 @@ export function initCemetery(scene) {
         base.position.y = 0.6;
         const stele = new THREE.Mesh(new THREE.BoxGeometry(12, 7, 1.2), graniteMat);
         stele.position.set(0, 4.7, -1.2);
-        const frame1 = new THREE.Mesh(
-            new THREE.CylinderGeometry(1.1, 1.1, 0.15, 24),
-            new THREE.MeshStandardMaterial({ color: 0xdddddd })
-        );
-        frame1.rotation.x = Math.PI / 2;
-        frame1.position.set(-3, 5.5, -0.5);
-        const frame2 = frame1.clone();
-        frame2.position.set(3, 5.5, -0.5);
-        group.add(base, stele, frame1, frame2);
+        group.add(base, stele);
         addCandle(group, 0, 1.5);
         scene.add(group);
         return group;
@@ -107,12 +89,40 @@ export function initCemetery(scene) {
         return group;
     }
 
+    // 🏛️ ВОТ ОНА: МЕМОРИАЛЬНАЯ СТЕНА ПАМЯТИ
+    function createMemoryWall(x, z) {
+        const group = new THREE.Group();
+        group.position.set(x, 0, z);
+
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0x080810, roughness: 0.4, metalness: 0.6 });
+        const wall = new THREE.Mesh(new THREE.BoxGeometry(40, 14, 2), wallMat);
+        wall.position.y = 7;
+
+        // Неоновая рамка над стеной
+        const borderMat = new THREE.MeshBasicMaterial({ color: 0x00f3ff });
+        const borderTop = new THREE.Mesh(new THREE.BoxGeometry(41, 0.4, 2.2), borderMat);
+        borderTop.position.y = 14.2;
+
+        // Ячейки памяти
+        for (let i = -15; i <= 15; i += 6) {
+            const frameMat = new THREE.MeshStandardMaterial({ color: 0x00f3ff, roughness: 0.2 });
+            const frame = new THREE.Mesh(new THREE.BoxGeometry(4.5, 4.5, 0.4), frameMat);
+            frame.position.set(i, 7, 1.1);
+            group.add(frame);
+        }
+
+        group.add(wall, borderTop);
+        scene.add(group);
+        return group;
+    }
+
     earthGroups.push(
         createClassicTomb(-20, 10),
         createCrossTomb(0, 10),
         createDoubleTomb(20, 10),
         createHoloTomb(-10, -15),
-        createHoloTomb(10, -15)
+        createHoloTomb(10, -15),
+        createMemoryWall(0, -35) // Спавним Стена Памяти сзади
     );
 
     return { earthGroups, candleLightMat };
