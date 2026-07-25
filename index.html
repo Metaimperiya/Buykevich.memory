@@ -1,139 +1,1044 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>3D Memorial Touch & PC Responsive</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      /* Отключаем стандартный скролл браузера на смартфонах, чтобы пальцы управляли 3D */
-      touch-action: none;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
-    }
-    body, html {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #020208;
-      font-family: monospace;
-    }
-    #canvas-container {
-      width: 100%;
-      height: 100%;
-    }
-    .ui-hud {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      color: #00f3ff;
-      font-size: 10px;
-      letter-spacing: 1.5px;
-      pointer-events: none;
-      text-transform: uppercase;
-      opacity: 0.85;
-      line-height: 1.5;
-    }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <meta charset="UTF-8">
+    <title>Virtual Cemetery — Stars in the Sky</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #050510;
+            font-family: 'Courier New', monospace;
+            touch-action: none;
+        }
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+            touch-action: none;
+        }
+        #canvas-container:active {
+            cursor: grabbing;
+        }
+
+        .ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00f3ff;
+            font-size: 11px;
+            letter-spacing: 2px;
+            pointer-events: none;
+            text-transform: uppercase;
+            opacity: 0.7;
+            line-height: 1.8;
+            z-index: 10;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.15);
+        }
+        .ui .highlight {
+            color: #ff6688;
+        }
+        .ui .memorial {
+            color: #ffdd88;
+        }
+        .ui .sky {
+            color: #88ddff;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 18px;
+            border-radius: 40px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 243, 255, 0.08);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        #controls button {
+            background: rgba(0, 243, 255, 0.05);
+            border: 1px solid rgba(0, 243, 255, 0.1);
+            color: #00f3ff;
+            padding: 5px 12px;
+            border-radius: 18px;
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            touch-action: manipulation;
+        }
+        #controls button:hover {
+            background: rgba(0, 243, 255, 0.15);
+            border-color: #00f3ff;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.1);
+        }
+        #controls button.active {
+            background: rgba(0, 243, 255, 0.2);
+            border-color: #00f3ff;
+        }
+        #controls button.memorial {
+            border-color: rgba(255, 200, 100, 0.2);
+            color: #ffdd88;
+        }
+        #controls button.memorial:hover {
+            background: rgba(255, 200, 100, 0.1);
+            border-color: #ffdd88;
+        }
+        #controls button.sky {
+            border-color: rgba(136, 221, 255, 0.2);
+            color: #88ddff;
+        }
+        #controls button.sky:hover {
+            background: rgba(136, 221, 255, 0.1);
+            border-color: #88ddff;
+        }
+
+        #status {
+            position: absolute;
+            bottom: 80px;
+            right: 20px;
+            color: rgba(0, 243, 255, 0.08);
+            font-family: 'Courier New', monospace;
+            font-size: 8px;
+            letter-spacing: 1px;
+            pointer-events: none;
+            text-align: right;
+            z-index: 10;
+            line-height: 1.8;
+        }
+
+        .grave-info {
+            position: absolute;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 15;
+            color: rgba(255, 200, 100, 0.6);
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-align: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            text-transform: uppercase;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 200, 100, 0.1);
+        }
+        .grave-info.visible {
+            opacity: 1;
+        }
+        .grave-info .name {
+            color: #ffdd88;
+            font-size: 14px;
+        }
+        .grave-info .dates {
+            color: rgba(255, 200, 100, 0.4);
+            font-size: 9px;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 12;
+            color: rgba(0, 243, 255, 0.1);
+            font-family: 'Courier New', monospace;
+            font-size: 8px;
+            letter-spacing: 1px;
+            pointer-events: none;
+            text-align: center;
+            opacity: 0.5;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 16px;
+            border-radius: 20px;
+        }
+        .controls-hint .key {
+            color: #ff8844;
+        }
+        @media (max-width: 768px) {
+            .controls-hint {
+                display: none;
+            }
+            #controls button {
+                font-size: 7px;
+                padding: 4px 10px;
+            }
+            .ui {
+                font-size: 8px;
+                top: 10px;
+                left: 10px;
+            }
+            #status {
+                font-size: 7px;
+                bottom: 70px;
+            }
+            .grave-info {
+                font-size: 8px;
+                padding: 6px 14px;
+                bottom: 75px;
+            }
+            .grave-info .name {
+                font-size: 11px;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+    </script>
 </head>
 <body>
 
-  <div class="ui-hud">
-    [SYSTEM]: TOUCH_NAVIGATION_ACTIVE<br>
-    [MOBILE]: 1 FINGER=ROTATE | 2 FINGERS=ZOOM/PAN<br>
-    [PC]: MOUSE DRAG & WHEEL
-  </div>
+    <div class="ui">
+        [SYSTEM]: VIRTUAL_CEMETERY_V3<br>
+        [CONTROLS]: DRAG + ZOOM + PAN + FLY<br>
+        <span class="memorial">[GROUND]: 8 GRAVES</span><br>
+        <span class="sky">[SKY]: 6000 BRIGHT STARS</span>
+    </div>
 
-  <div id="canvas-container"></div>
+    <div class="grave-info" id="graveInfo">
+        <div class="name" id="graveName">ИМЯ</div>
+        <div class="dates" id="graveDates">📅 1945 — 2023</div>
+        <div style="font-size:7px;color:rgba(255,200,100,0.2);margin-top:2px;">✦ вечная память ✦</div>
+    </div>
 
-  <script>
-    const container = document.getElementById('canvas-container');
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x020208, 0.007);
+    <div class="controls-hint">
+        <span class="key">🖱️ Drag</span> → Rotate · <span class="key">Scroll</span> → Zoom · <span class="key">Right-click</span> → Pan · <span class="key">Q</span> → Fly Up · <span class="key">E</span> → Fly Down
+    </div>
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 20, 60);
+    <div id="status">
+        <span id="fpsDisplay">60 FPS</span><br>
+        <span id="particleCount">graves</span>
+    </div>
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    container.appendChild(renderer.domElement);
+    <div id="controls">
+        <button id="btnAuto" class="active">⟳</button>
+        <button id="btnReset">⟲</button>
+        <button id="btnCandles" class="memorial active">🕯️</button>
+        <button id="btnStars" class="sky active">✨</button>
+        <button id="btnFog" class="active">🌫️</button>
+        <button id="btnPray" class="memorial">🙏</button>
+    </div>
 
-    // НАСТРОЙКА УПРАВЛЕНИЯ СЕНСОРОМ И МЫШЬЮ
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;      // Плавная инерция
-    controls.dampingFactor = 0.05;
-    controls.rotateSpeed = 0.8;
-    controls.zoomSpeed = 1.2;
-    controls.panSpeed = 0.8;
-    controls.maxPolarAngle = Math.PI / 2 - 0.01; // Камера не проваливается под землю
+    <div id="canvas-container"></div>
 
-    // Свет и Ландшафт
-    const ambientLight = new THREE.AmbientLight(0x1a1a3a, 1.5);
-    scene.add(ambientLight);
+    <script>
+        // =========================================
+        // 1. СЦЕНА
+        // =========================================
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050510, 0.0012);
 
-    const moonLight = new THREE.DirectionalLight(0x00f3ff, 1.5);
-    moonLight.position.set(30, 80, 40);
-    scene.add(moonLight);
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 30, 200);
+        camera.lookAt(0, 0, 0);
 
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(300, 300),
-      new THREE.MeshStandardMaterial({ color: 0x080810, roughness: 0.9 })
-    );
-    ground.rotation.x = -Math.PI / 2;
-    scene.add(ground);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setClearColor(0x050510);
+        container.appendChild(renderer.domElement);
 
-    // Материал гранита
-    const graniteMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.3, metalness: 0.8 });
+        const entity = new THREE.Group();
+        scene.add(entity);
 
-    // Простая функция генерации памятников
-    function addMemorial(x, z, type) {
-      const group = new THREE.Group();
-      group.position.set(x, 0, z);
+        // =========================================
+        // 2. ТЕКСТУРЫ
+        // =========================================
+        function makeTexture(char, color = '#ffffff', size = 42) {
+            const c = document.createElement('canvas');
+            c.width = c.height = 64;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = color;
+            ctx.font = `Bold ${size}px monospace`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 20;
+            ctx.fillText(char, 32, 32);
+            return new THREE.CanvasTexture(c);
+        }
 
-      const base = new THREE.Mesh(new THREE.BoxGeometry(8, 1.5, 5), graniteMat);
-      base.position.y = 0.75;
-      group.add(base);
+        const symbols = '†✝✟✞✠☦⚰🕊∞◈◇◆'.split('');
+        const textures = symbols.map(s => makeTexture(s, '#ffdd88', 38));
 
-      if (type === 'stele') {
-        const stele = new THREE.Mesh(new THREE.BoxGeometry(6, 11, 1.2), graniteMat);
-        stele.position.set(0, 7, 0);
-        group.add(stele);
-      } else if (type === 'cross') {
-        const vBar = new THREE.Mesh(new THREE.BoxGeometry(1.5, 12, 1), graniteMat);
-        vBar.position.set(0, 7.5, 0);
-        const hBar = new THREE.Mesh(new THREE.BoxGeometry(7, 1.5, 1), graniteMat);
-        hBar.position.set(0, 9.5, 0);
-        group.add(vBar, hBar);
-      }
+        // =========================================
+        // 3. ЗВЁЗДЫ (ВЫСОКО В НЕБЕ — ИЗ MEMORIAL)
+        // =========================================
+        const starsGeo = new THREE.BufferGeometry();
+        const starCount = 6000;
+        const starPos = new Float32Array(starCount * 3);
+        const starCol = new Float32Array(starCount * 3);
+        const starSizes = new Float32Array(starCount);
 
-      scene.add(group);
-    }
+        for (let i = 0; i < starCount; i++) {
+            const r = 350 + Math.random() * 450;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            starPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+            starPos[i * 3 + 1] = Math.abs(r * Math.cos(phi)) + 150;
+            starPos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
 
-    addMemorial(-15, 0, 'stele');
-    addMemorial(15, 0, 'cross');
+            const bright = 0.6 + Math.random() * 0.4;
+            const hue = 0.55 + Math.random() * 0.15;
+            const color = new THREE.Color().setHSL(hue, 0.7, bright);
+            starCol[i * 3] = color.r;
+            starCol[i * 3 + 1] = color.g;
+            starCol[i * 3 + 2] = color.b;
+            starSizes[i] = 1.0 + Math.random() * 3.5;
+        }
 
-    // Адаптив под разворот мобильника или изменение экрана ПК
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+        starsGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        starsGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
+        starsGeo.setAttribute('size', new THREE.BufferAttribute(starSizes, 1));
 
-    // Анимационный цикл
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update(); // Обязательно обновляем контроллер каждый кадр для плавности!
-      renderer.render(scene, camera);
-    }
+        const starMat = new THREE.PointsMaterial({
+            size: 2.0,
+            transparent: true,
+            opacity: 0.95,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            sizeAttenuation: true,
+        });
 
-    animate();
-  </script>
+        const stars = new THREE.Points(starsGeo, starMat);
+        scene.add(stars);
+
+        // =========================================
+        // 4. ДАННЫЕ О МОГИЛАХ
+        // =========================================
+        const graves = [{
+            id: 0,
+            name: 'Александр',
+            dates: '1945 — 2023',
+            x: -35,
+            z: 0,
+            color: '#ffdd88',
+            epitaph: 'Вечная память'
+        }, {
+            id: 1,
+            name: 'Екатерина',
+            dates: '1950 — 2021',
+            x: -15,
+            z: 15,
+            color: '#ff88aa',
+            epitaph: 'Светлая душа'
+        }, {
+            id: 2,
+            name: 'Владимир',
+            dates: '1938 — 2019',
+            x: 15,
+            z: -15,
+            color: '#88ddff',
+            epitaph: 'Честь и достоинство'
+        }, {
+            id: 3,
+            name: 'Наталья',
+            dates: '1948 — 2022',
+            x: 35,
+            z: 0,
+            color: '#ffaa88',
+            epitaph: 'Любовь и забота'
+        }, {
+            id: 4,
+            name: 'Иван',
+            dates: '1935 — 2018',
+            x: -25,
+            z: -20,
+            color: '#88ffaa',
+            epitaph: 'Труд и верность'
+        }, {
+            id: 5,
+            name: 'Ольга',
+            dates: '1942 — 2020',
+            x: 25,
+            z: 20,
+            color: '#aa88ff',
+            epitaph: 'Мудрость и доброта'
+        }, {
+            id: 6,
+            name: 'Сергей',
+            dates: '1960 — 2023',
+            x: 0,
+            z: -30,
+            color: '#ffdd44',
+            epitaph: 'Сила духа'
+        }, {
+            id: 7,
+            name: 'Мария',
+            dates: '1955 — 2022',
+            x: 0,
+            z: 30,
+            color: '#ff88dd',
+            epitaph: 'Нежность и свет'
+        }, ];
+
+        // =========================================
+        // 5. ГЕНЕРАЦИЯ КЛАДБИЩА
+        // =========================================
+        const N = 25000;
+        const geo = new THREE.BufferGeometry();
+        const pos = new Float32Array(N * 3);
+        const base = new Float32Array(N * 3);
+        const col = new Float32Array(N * 3);
+        const flags = new Uint8Array(N);
+
+        const colGround = new THREE.Color(0x111122);
+        const colGrave = new THREE.Color(0x445577);
+        const colStone = new THREE.Color(0x667788);
+        const colGold = new THREE.Color(0xffdd88);
+        const colFlame = new THREE.Color(0xff6633);
+        const colStarsGround = new THREE.Color(0x88ddff);
+
+        let idx = 0;
+
+        function addParticle(x, y, z, color, flag) {
+            if (idx >= N) return;
+            pos[idx * 3] = x;
+            pos[idx * 3 + 1] = y;
+            pos[idx * 3 + 2] = z;
+            base[idx * 3] = x;
+            base[idx * 3 + 1] = y;
+            base[idx * 3 + 2] = z;
+            col[idx * 3] = color.r;
+            col[idx * 3 + 1] = color.g;
+            col[idx * 3 + 2] = color.b;
+            flags[idx] = flag;
+            idx++;
+        }
+
+        // ---- 5.1 ЗЕМЛЯ ----
+        for (let i = 0; i < 5000; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const r = 30 + Math.random() * 50;
+            const x = Math.cos(a) * r;
+            const z = Math.sin(a) * r;
+            const y = -2 + Math.random() * 0.5;
+            const bright = 0.3 + Math.random() * 0.2;
+            addParticle(x, y, z, new THREE.Color(colGround.r * bright, colGround.g * bright, colGround.b * bright), 0);
+        }
+
+        // ---- 5.2 МОГИЛЫ ----
+        graves.forEach((grave, index) => {
+            const gx = grave.x;
+            const gz = grave.z;
+            const color = new THREE.Color(grave.color);
+
+            for (let i = 0; i < 300; i++) {
+                const w = 6 + Math.random() * 4;
+                const h = 0.5 + Math.random() * 1.5;
+                const d = 3 + Math.random() * 3;
+                const x = gx + (Math.random() - 0.5) * w;
+                const z = gz + (Math.random() - 0.5) * d;
+                const y = -0.5 + Math.random() * h;
+                const bright = 0.4 + Math.random() * 0.3;
+                addParticle(x, y, z, new THREE.Color(colStone.r * bright, colStone.g * bright, colStone.b * bright), 1);
+            }
+
+            for (let i = 0; i < 400; i++) {
+                const w = 5 + Math.random() * 3;
+                const h = 6 + Math.random() * 4;
+                const d = 1.5 + Math.random() * 2;
+                const x = gx + (Math.random() - 0.5) * w;
+                const z = gz + (Math.random() - 0.5) * d;
+                const y = 0.5 + Math.random() * h;
+                const bright = 0.3 + Math.random() * 0.3;
+                addParticle(x, y, z, new THREE.Color(colGrave.r * bright, colGrave.g * bright, colGrave.b * bright), 1);
+            }
+
+            for (let i = 0; i < 150; i++) {
+                const x = gx + (Math.random() - 0.5) * 3;
+                const z = gz + (Math.random() - 0.5) * 2;
+                const y = 4 + Math.random() * 4;
+                const bright = 0.6 + Math.random() * 0.4;
+                addParticle(x, y, z, new THREE.Color(colGold.r * bright, colGold.g * bright, colGold.b * bright), 2);
+            }
+
+            const nameChars = grave.name.split('');
+            for (let ci = 0; ci < nameChars.length; ci++) {
+                const char = nameChars[ci];
+                for (let j = 0; j < 30; j++) {
+                    const x = gx - nameChars.length * 0.8 + ci * 1.6 + (Math.random() - 0.5) * 0.8;
+                    const z = gz + 3.5 + (Math.random() - 0.5) * 0.6;
+                    const y = 2.5 + Math.random() * 1.5;
+                    const bright = 0.7 + Math.random() * 0.3;
+                    addParticle(x, y, z, new THREE.Color(color.r * bright, color.g * bright, color.b * bright), 3);
+                }
+            }
+
+            for (let i = 0; i < 40; i++) {
+                const a = Math.random() * Math.PI * 2;
+                const r = 3 + Math.random() * 4;
+                const x = gx + Math.cos(a) * r;
+                const z = gz + Math.sin(a) * r;
+                const y = 0.1 + Math.random() * 0.8;
+                const bright = 0.5 + Math.random() * 0.5;
+                addParticle(x, y, z, new THREE.Color(colFlame.r * bright, colFlame.g * bright * 0.6, colFlame.b * bright *
+                    0.3), 4);
+            }
+
+            for (let i = 0; i < 60; i++) {
+                const a = Math.random() * Math.PI * 2;
+                const r = 2 + Math.random() * 5;
+                const x = gx + Math.cos(a) * r;
+                const z = gz + Math.sin(a) * r;
+                const y = 0.1 + Math.random() * 0.3;
+                const flowerColor = new THREE.Color(Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.3, Math.random() *
+                    0.5 + 0.5);
+                const bright = 0.4 + Math.random() * 0.4;
+                addParticle(x, y, z, new THREE.Color(flowerColor.r * bright, flowerColor.g * bright, flowerColor.b *
+                    bright), 5);
+            }
+        });
+
+        // ---- 5.3 ЗВЁЗДЫ НА ЗЕМЛЕ (декоративные) ----
+        for (let i = 0; i < 2000; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const r = 40 + Math.random() * 80;
+            const x = Math.cos(a) * r;
+            const z = Math.sin(a) * r;
+            const y = 10 + Math.random() * 30;
+            const bright = 0.3 + Math.random() * 0.5;
+            addParticle(x, y, z, new THREE.Color(colStarsGround.r * bright, colStarsGround.g * bright, colStarsGround.b *
+                bright), 6);
+        }
+
+        // ---- 5.4 ТУМАН ----
+        for (let i = 0; i < 3000; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const r = 20 + Math.random() * 70;
+            const x = Math.cos(a) * r;
+            const z = Math.sin(a) * r;
+            const y = 0.2 + Math.random() * 2;
+            const bright = 0.05 + Math.random() * 0.1;
+            addParticle(x, y, z, new THREE.Color(0.1 * bright, 0.2 * bright, 0.4 * bright), 7);
+        }
+
+        // ---- 5.5 СВЕТЛЯЧКИ ----
+        for (let i = 0; i < 400; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const r = 10 + Math.random() * 60;
+            const x = Math.cos(a) * r;
+            const z = Math.sin(a) * r;
+            const y = 0.5 + Math.random() * 8;
+            const bright = 0.3 + Math.random() * 0.5;
+            addParticle(x, y, z, new THREE.Color(0.8 * bright, 0.9 * bright, 1 * bright), 8);
+        }
+
+        // =========================================
+        // 6. ПРИМЕНЕНИЕ
+        // =========================================
+        const actualCount = idx;
+        document.getElementById('particleCount').textContent = actualCount + ' particles';
+
+        const posFinal = pos.slice(0, actualCount * 3);
+        const baseFinal = base.slice(0, actualCount * 3);
+        const colFinal = col.slice(0, actualCount * 3);
+        const flagsFinal = flags.slice(0, actualCount);
+
+        geo.setAttribute('position', new THREE.BufferAttribute(posFinal, 3));
+        geo.setAttribute('color', new THREE.BufferAttribute(colFinal, 3));
+
+        const mat = new THREE.PointsMaterial({
+            size: 2.5,
+            map: textures[0],
+            transparent: true,
+            opacity: 0.85,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            sizeAttenuation: true,
+        });
+
+        const cloud = new THREE.Points(geo, mat);
+        entity.add(cloud);
+
+        // =========================================
+        // 7. РАЙКАСТ ДЛЯ ХОВЕРА
+        // =========================================
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let hoveredGrave = -1;
+        const graveInfo = document.getElementById('graveInfo');
+        const graveName = document.getElementById('graveName');
+        const graveDates = document.getElementById('graveDates');
+
+        const graveSpheres = [];
+        graves.forEach((grave) => {
+            const sphere = new THREE.Mesh(
+                new THREE.SphereGeometry(6, 8, 8),
+                new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 })
+            );
+            sphere.position.set(grave.x, 2, grave.z);
+            sphere.userData = { graveIndex: grave.id };
+            entity.add(sphere);
+            graveSpheres.push(sphere);
+        });
+
+        container.addEventListener('mousemove', (e) => {
+            const rect = container.getBoundingClientRect();
+            mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(graveSpheres);
+
+            if (intersects.length > 0) {
+                const idx2 = intersects[0].object.userData.graveIndex;
+                if (idx2 !== undefined) {
+                    hoveredGrave = idx2;
+                    const g = graves[idx2];
+                    graveName.textContent = g.name;
+                    graveDates.textContent = `📅 ${g.dates}`;
+                    graveInfo.classList.add('visible');
+                    container.style.cursor = 'pointer';
+                }
+            } else {
+                hoveredGrave = -1;
+                graveInfo.classList.remove('visible');
+                container.style.cursor = 'grab';
+            }
+        });
+
+        // =========================================
+        // 8. УПРАВЛЕНИЕ (DRAG + ZOOM + PAN + FLY)
+        // =========================================
+        let drag = false,
+            prevX = 0,
+            prevY = 0;
+        let isPan = false;
+        let auto = true;
+        let candlesOn = true,
+            starsOn = true,
+            fogOn = true;
+        let prayMode = false,
+            prayTime = 0;
+
+        // Состояние камеры
+        let camTheta = 0;
+        let camPhi = 0;
+        let camRadius = 200;
+        let camTargetX = 0,
+            camTargetY = 0,
+            camTargetZ = 0;
+
+        function updateCamera() {
+            const rad = camRadius;
+            const theta = camTheta;
+            const phi = camPhi;
+            camera.position.x = camTargetX + rad * Math.sin(theta) * Math.cos(phi);
+            camera.position.y = camTargetY + rad * Math.sin(phi);
+            camera.position.z = camTargetZ + rad * Math.cos(theta) * Math.cos(phi);
+            camera.lookAt(camTargetX, camTargetY, camTargetZ);
+        }
+
+        // ---- 8.1 МЫШЬ ----
+        container.addEventListener('mousedown', (e) => {
+            if (e.button === 0 && hoveredGrave === -1) {
+                drag = true;
+                prevX = e.clientX;
+                prevY = e.clientY;
+                auto = false;
+                btnAuto.classList.remove('active');
+                isPan = false;
+            }
+            if (e.button === 2) {
+                isPan = true;
+                prevX = e.clientX;
+                prevY = e.clientY;
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            const dx = e.clientX - prevX;
+            const dy = e.clientY - prevY;
+
+            if (drag && !isPan) {
+                camTheta -= dx * 0.005;
+                camPhi -= dy * 0.005;
+                camPhi = Math.max(-1.2, Math.min(1.2, camPhi));
+                updateCamera();
+                prevX = e.clientX;
+                prevY = e.clientY;
+            }
+
+            if (isPan) {
+                const moveX = -dx * 0.3;
+                const moveY = dy * 0.3;
+                // Панорамирование в направлении взгляда
+                const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+                const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+                forward.y = 0;
+                forward.normalize();
+                right.y = 0;
+                right.normalize();
+                camTargetX += right.x * moveX + forward.x * moveY;
+                camTargetZ += right.z * moveX + forward.z * moveY;
+                camTargetY += dy * 0.3;
+                updateCamera();
+                prevX = e.clientX;
+                prevY = e.clientY;
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            drag = false;
+            isPan = false;
+        });
+
+        // ---- 8.2 КОЛЕСИКО (ZOOM) ----
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 8 : -8;
+            camRadius = Math.max(30, Math.min(600, camRadius + delta));
+            updateCamera();
+        }, { passive: false });
+
+        // ---- 8.3 КЛАВИАТУРА (FLY UP/DOWN) ----
+        const keys = { q: false, e: false };
+
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'q') keys.q = true;
+            if (key === 'e') keys.e = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'q') keys.q = false;
+            if (key === 'e') keys.e = false;
+        });
+
+        function updateKeyboardFly() {
+            const speed = 1.5;
+            if (keys.q) {
+                camTargetY += speed;
+                updateCamera();
+            }
+            if (keys.e) {
+                camTargetY -= speed;
+                updateCamera();
+            }
+        }
+
+        // ---- 8.4 TOUCH (ТЕЛЕФОН) ----
+        let touch1 = null,
+            touch2 = null;
+        let touchStartDist = 0;
+        let touchStartTheta = 0,
+            touchStartPhi = 0;
+        let touchStartTargetX = 0,
+            touchStartTargetY = 0,
+            touchStartTargetZ = 0;
+        let touchStartRadius = 0;
+        let lastTouchX = 0,
+            lastTouchY = 0;
+        let isTouching = false;
+
+        container.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touches = e.touches;
+            if (touches.length === 1) {
+                touch1 = touches[0];
+                lastTouchX = touch1.clientX;
+                lastTouchY = touch1.clientY;
+                isTouching = true;
+                drag = true;
+                auto = false;
+                btnAuto.classList.remove('active');
+                isPan = false;
+            } else if (touches.length === 2) {
+                touch1 = touches[0];
+                touch2 = touches[1];
+                const dx = touch2.clientX - touch1.clientX;
+                const dy = touch2.clientY - touch1.clientY;
+                touchStartDist = Math.sqrt(dx * dx + dy * dy);
+                touchStartTheta = camTheta;
+                touchStartPhi = camPhi;
+                touchStartRadius = camRadius;
+                touchStartTargetX = camTargetX;
+                touchStartTargetY = camTargetY;
+                touchStartTargetZ = camTargetZ;
+                isTouching = true;
+                drag = false;
+                isPan = false;
+            }
+        }, { passive: false });
+
+        container.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touches = e.touches;
+
+            if (touches.length === 1 && isTouching) {
+                const t = touches[0];
+                const dx = t.clientX - lastTouchX;
+                const dy = t.clientY - lastTouchY;
+                camTheta -= dx * 0.005;
+                camPhi -= dy * 0.005;
+                camPhi = Math.max(-1.2, Math.min(1.2, camPhi));
+                updateCamera();
+                lastTouchX = t.clientX;
+                lastTouchY = t.clientY;
+            } else if (touches.length === 2 && isTouching) {
+                const t1 = touches[0];
+                const t2 = touches[1];
+                const dx = t2.clientX - t1.clientX;
+                const dy = t2.clientY - t1.clientY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const scale = dist / touchStartDist;
+
+                camRadius = Math.max(30, Math.min(600, touchStartRadius / scale));
+
+                const midX = (t1.clientX + t2.clientX) / 2;
+                const midY = (t1.clientY + t2.clientY) / 2;
+                const startMidX = (touch1.clientX + touch2.clientX) / 2;
+                const startMidY = (touch1.clientY + touch2.clientY) / 2;
+                const panX = -(midX - startMidX) * 0.3;
+                const panY = (midY - startMidY) * 0.3;
+
+                camTargetX = touchStartTargetX + panX * Math.cos(camTheta) + panY * Math.sin(camTheta);
+                camTargetZ = touchStartTargetZ - panX * Math.sin(camTheta) + panY * Math.cos(camTheta);
+                camTargetY = touchStartTargetY + panY * 0.3;
+
+                updateCamera();
+            }
+        }, { passive: false });
+
+        container.addEventListener('touchend', (e) => {
+            isTouching = false;
+            drag = false;
+            touch1 = null;
+            touch2 = null;
+        }, { passive: false });
+
+        // ---- 8.5 КНОПКИ ----
+        const btnAuto = document.getElementById('btnAuto');
+        const btnReset = document.getElementById('btnReset');
+        const btnCandles = document.getElementById('btnCandles');
+        const btnStars = document.getElementById('btnStars');
+        const btnFog = document.getElementById('btnFog');
+        const btnPray = document.getElementById('btnPray');
+
+        btnAuto.addEventListener('click', function() {
+            auto = !auto;
+            this.classList.toggle('active');
+        });
+
+        btnReset.addEventListener('click', function() {
+            camTheta = 0;
+            camPhi = 0;
+            camRadius = 200;
+            camTargetX = 0;
+            camTargetY = 0;
+            camTargetZ = 0;
+            updateCamera();
+            auto = true;
+            btnAuto.classList.add('active');
+            prayMode = false;
+            prayTime = 0;
+            btnPray.textContent = '🙏';
+            btnPray.classList.remove('active');
+        });
+
+        btnCandles.addEventListener('click', function() {
+            candlesOn = !candlesOn;
+            this.classList.toggle('active');
+            this.textContent = candlesOn ? '🕯️' : '🕯️OFF';
+            const c = geo.attributes.color;
+            for (let i = 0; i < actualCount; i++) {
+                if (flagsFinal[i] === 4) {
+                    if (candlesOn) {
+                        const bright = 0.5 + Math.random() * 0.5;
+                        c.setXYZ(i, colFlame.r * bright, colFlame.g * bright * 0.6, colFlame.b * bright * 0.3);
+                    } else {
+                        c.setXYZ(i, 0, 0, 0);
+                    }
+                }
+            }
+            c.needsUpdate = true;
+        });
+
+        btnStars.addEventListener('click', function() {
+            starsOn = !starsOn;
+            this.classList.toggle('active');
+            this.textContent = starsOn ? '✨' : '✨OFF';
+            // Видимость звёзд в небе
+            stars.visible = starsOn;
+            // Видимость декоративных звёзд на земле
+            const c = geo.attributes.color;
+            for (let i = 0; i < actualCount; i++) {
+                if (flagsFinal[i] === 6) {
+                    if (starsOn) {
+                        const bright = 0.3 + Math.random() * 0.5;
+                        c.setXYZ(i, colStarsGround.r * bright, colStarsGround.g * bright, colStarsGround.b * bright);
+                    } else {
+                        c.setXYZ(i, 0, 0, 0);
+                    }
+                }
+            }
+            c.needsUpdate = true;
+        });
+
+        btnFog.addEventListener('click', function() {
+            fogOn = !fogOn;
+            this.classList.toggle('active');
+            this.textContent = fogOn ? '🌫️' : '🌫️OFF';
+            const c = geo.attributes.color;
+            for (let i = 0; i < actualCount; i++) {
+                if (flagsFinal[i] === 7) {
+                    if (fogOn) {
+                        const bright = 0.05 + Math.random() * 0.1;
+                        c.setXYZ(i, 0.1 * bright, 0.2 * bright, 0.4 * bright);
+                    } else {
+                        c.setXYZ(i, 0, 0, 0);
+                    }
+                }
+            }
+            c.needsUpdate = true;
+        });
+
+        btnPray.addEventListener('click', function() {
+            prayMode = !prayMode;
+            this.classList.toggle('active');
+            this.textContent = prayMode ? '🙏PRAY' : '🙏';
+            if (prayMode) {
+                prayTime = 0;
+            }
+        });
+
+        // ---- 8.6 ЗАПРЕТ КОНТЕКСТНОГО МЕНЮ ----
+        container.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // =========================================
+        // 9. FPS
+        // =========================================
+        let fc = 0,
+            lastFps = performance.now();
+        const fpsEl = document.getElementById('fpsDisplay');
+
+        function updateFps() {
+            fc++;
+            const now = performance.now();
+            if (now - lastFps >= 1000) {
+                fpsEl.textContent = Math.round(fc * 1000 / (now - lastFps)) + ' FPS';
+                fc = 0;
+                lastFps = now;
+            }
+        }
+
+        // =========================================
+        // 10. АНИМАЦИЯ
+        // =========================================
+        const clock2 = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const t = clock2.getElapsedTime();
+            const p = geo.attributes.position;
+            const c = geo.attributes.color;
+
+            // ---- СВЕЧИ ----
+            if (candlesOn) {
+                for (let i = 0; i < actualCount; i++) {
+                    if (flagsFinal[i] === 4) {
+                        const flicker = 0.7 + Math.sin(t * 5 + i * 0.5) * 0.3 + Math.sin(t * 3.7 + i * 0.7) * 0.2;
+                        const bright = 0.3 + flicker * 0.6;
+                        c.setXYZ(i, colFlame.r * bright, colFlame.g * bright * 0.5, colFlame.b * bright * 0.2);
+                    }
+                }
+                c.needsUpdate = true;
+            }
+
+            // ---- СВЕТЛЯЧКИ ----
+            for (let i = 0; i < actualCount; i++) {
+                if (flagsFinal[i] === 8) {
+                    const bx = base[i * 3],
+                        by = base[i * 3 + 1],
+                        bz = base[i * 3 + 2];
+                    const offsetX = Math.sin(t * 0.5 + bz * 0.1) * 1.5;
+                    const offsetY = Math.sin(t * 0.7 + bx * 0.1 + by * 0.05) * 1.5 + 0.5;
+                    const offsetZ = Math.cos(t * 0.6 + bx * 0.1) * 1.5;
+                    p.setXYZ(i, bx + offsetX, by + offsetY, bz + offsetZ);
+                    const bright = 0.3 + Math.sin(t * 2 + i * 0.1) * 0.3 + 0.3;
+                    c.setXYZ(i, 0.8 * bright, 0.9 * bright, 1 * bright);
+                }
+            }
+            p.needsUpdate = true;
+            c.needsUpdate = true;
+
+            // ---- МОЛИТВА ----
+            if (prayMode) {
+                prayTime += 0.02;
+                const beamIntensity = 0.5 + Math.sin(prayTime * 2) * 0.2;
+                for (let i = 0; i < actualCount; i++) {
+                    if (flagsFinal[i] === 2 || flagsFinal[i] === 3) {
+                        const bright = 0.5 + beamIntensity * 0.5;
+                        c.setXYZ(i, Math.min(1, colGold.r * bright), Math.min(1, colGold.g * bright), Math.min(1,
+                            colGold.b * bright));
+                    }
+                }
+                c.needsUpdate = true;
+            }
+
+            // ---- АВТОВРАЩЕНИЕ ----
+            if (auto && !drag && !isPan) {
+                camTheta += 0.0015;
+                updateCamera();
+            }
+
+            // ---- FLY UP/DOWN ----
+            updateKeyboardFly();
+
+            // ---- ВРАЩЕНИЕ ЗВЁЗД ----
+            stars.rotation.y += 0.0001;
+
+            updateFps();
+            renderer.render(scene, camera);
+        }
+
+        // =========================================
+        // 11. РЕСАЙЗ
+        // =========================================
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // =========================================
+        // 12. СТАРТ
+        // =========================================
+        updateCamera();
+        animate();
+
+        console.log('🪦 Virtual Cemetery V3 — Stars in the Sky!');
+        console.log('🖱️ Drag → Rotate | Scroll → Zoom | Right-click → Pan');
+        console.log('⌨️ Q → Fly Up | E → Fly Down');
+        console.log('📱 Two-finger pinch → Zoom | Two-finger drag → Pan');
+        console.log(`📊 ${actualCount} particles`);
+        console.log(`🪦 ${graves.length} memorial graves`);
+        console.log('✨ 6000 bright stars in the sky (height 150+)');
+    </script>
 </body>
 </html>
