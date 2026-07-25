@@ -2,36 +2,50 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Angelos City — Некрополь и Галактика</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Memorial Park — Angelos City</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="assets/css/style.css">
+
+    <!-- Стабильный CDN Three.js без конфликтов -->
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
 </head>
 <body>
-    <div id="crosshair"></div>
 
-    <div id="controls-info" class="hud-panel">
-        <h3>Управление</h3>
-        <b>Клик</b> — Обзор мышью<br>
-        <b>WASD</b> — Движение<br>
-        <b>E / Q</b> — Взлёт в Галактику / Спуск<br>
-        <b>Shift</b> — Ускорение
+    <div class="ui-hud">
+        [SYSTEM]: FPS_MEMORIAL_PARK<br>
+        <span class="highlight">[GROUND]: CEMETERY</span><br>
+        <span class="sky">[SKY]: GALAXY_MEMORIALS</span><br>
+        <span class="key">[FPS]: CLICK TO LOCK MOUSE</span>
     </div>
 
-    <div id="graveInfo" class="hud-panel">
-        <div id="graveName">—</div>
-        <div id="graveDates">—</div>
-        <div id="graveLocation">—</div>
+    <div id="crosshair">+</div>
+
+    <div class="grave-info" id="graveInfo">
+        <div class="name" id="graveName">ИМЯ</div>
+        <div class="dates" id="graveDates">📅 1945 — 2023</div>
+        <div class="location" id="graveLocation">✦ ЗЕМЛЯ ✦</div>
     </div>
 
-    <div id="webgl-container"></div>
+    <div class="controls-hint">
+        <span class="key">W A S D</span> — движение · <span class="key">Q</span> ↑ · <span class="key">E</span> ↓ · <span class="key">Shift</span> — бег
+    </div>
 
-    <!-- Подключаем скрипты в строго правильном порядке -->
-    <script src="js/core/scene.js"></script>
-    <script src="js/cemetery/tombs.js"></script>
-    <script src="js/galaxy/galaxy-system.js"></script>
-    <script src="js/controls/keyboard.js"></script>
-    <script src="js/controls/fps-camera.js"></script>
-    <script src="js/main.js"></script>
+    <div id="status">
+        <span id="fpsDisplay">60 FPS</span><br>
+        <span id="particleCount">particles</span>
+    </div>
+
+    <div id="controls">
+        <button id="btnReset">⟲</button>
+        <button id="btnCandles" class="gold active">🕯️</button>
+        <button id="btnGalaxy" class="gold active">🌌</button>
+        <button id="btnFog" class="active">🌫️</button>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <!-- Исправленный прямой импорт для Vercel -->
+    <script type="module" src="assets/js/main.js"></script>
 </body>
 </html>
