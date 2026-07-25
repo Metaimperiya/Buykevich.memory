@@ -1,7 +1,6 @@
-const graniteMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.3, metalness: 0.8 });
-const candleLightMat = new THREE.MeshBasicMaterial({ color: 0xffa500 });
-
+// Создаем текстуру шума
 function createNoiseTexture() {
+    if (typeof THREE === 'undefined') return null;
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = 128;
     const ctx = canvas.getContext('2d');
@@ -14,20 +13,28 @@ function createNoiseTexture() {
     }
     return new THREE.CanvasTexture(canvas);
 }
-const noiseTex = createNoiseTexture();
-
-function addCandle(group, x, z) {
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1.2, 10), graniteMat);
-    base.position.set(x, 0.6, z);
-    const flame = new THREE.Mesh(new THREE.SphereGeometry(0.25, 6, 6), candleLightMat);
-    flame.position.set(x, 1.5, z);
-    const light = new THREE.PointLight(0xffaa00, 1.5, 10);
-    light.position.set(x, 1.8, z);
-    group.add(base, flame, light);
-}
 
 export function initCemetery(scene) {
+    if (typeof THREE === 'undefined') {
+        console.error('THREE.js не загружен!');
+        return { earthGroups: [] };
+    }
+
+    const graniteMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.3, metalness: 0.8 });
+    const candleLightMat = new THREE.MeshBasicMaterial({ color: 0xffa500 });
+    const noiseTex = createNoiseTexture();
+
     const earthGroups = [];
+
+    function addCandle(group, x, z) {
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1.2, 10), graniteMat);
+        base.position.set(x, 0.6, z);
+        const flame = new THREE.Mesh(new THREE.SphereGeometry(0.25, 6, 6), candleLightMat);
+        flame.position.set(x, 1.5, z);
+        const light = new THREE.PointLight(0xffaa00, 1.5, 10);
+        light.position.set(x, 1.8, z);
+        group.add(base, flame, light);
+    }
 
     function createClassicTomb(x, z) {
         const group = new THREE.Group();
@@ -45,7 +52,6 @@ export function initCemetery(scene) {
         group.add(base, stele, photoFrame);
         addCandle(group, 2.5, 1.2);
         scene.add(group);
-        group.userData = { name: 'Классический памятник', dates: '—', type: 'earth' };
         return group;
     }
 
@@ -61,7 +67,6 @@ export function initCemetery(scene) {
         group.add(base, vBar, hBar);
         addCandle(group, -2, 1);
         scene.add(group);
-        group.userData = { name: 'Крест', dates: '—', type: 'earth' };
         return group;
     }
 
@@ -83,7 +88,6 @@ export function initCemetery(scene) {
         group.add(base, stele, frame1, frame2);
         addCandle(group, 0, 1.5);
         scene.add(group);
-        group.userData = { name: 'Семейный памятник', dates: '—', type: 'earth' };
         return group;
     }
 
@@ -100,26 +104,6 @@ export function initCemetery(scene) {
         holoStele.position.set(0, 5.5, 0);
         group.add(base, holoStele);
         scene.add(group);
-        group.userData = { name: 'Голографический памятник', dates: '—', type: 'earth' };
-        return group;
-    }
-
-    function createMemoryWall(x, z) {
-        const group = new THREE.Group();
-        group.position.set(x, 0, z);
-        const wall = new THREE.Mesh(new THREE.BoxGeometry(30, 12, 1.5), graniteMat);
-        wall.position.y = 6;
-        for (let i = -12; i <= 12; i += 6) {
-            const frame = new THREE.Mesh(
-                new THREE.BoxGeometry(4, 4, 0.3),
-                new THREE.MeshStandardMaterial({ color: 0x00f3ff, roughness: 0.2, metalness: 0.5 })
-            );
-            frame.position.set(i, 6, 1.0);
-            group.add(frame);
-        }
-        group.add(wall);
-        scene.add(group);
-        group.userData = { name: 'Стена памяти', dates: '—', type: 'earth' };
         return group;
     }
 
@@ -128,8 +112,7 @@ export function initCemetery(scene) {
         createCrossTomb(0, 10),
         createDoubleTomb(20, 10),
         createHoloTomb(-10, -15),
-        createHoloTomb(10, -15),
-        createMemoryWall(0, -35)
+        createHoloTomb(10, -15)
     );
 
     return { earthGroups, candleLightMat };
