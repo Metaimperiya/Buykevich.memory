@@ -1,0 +1,22 @@
+{
+  "name": "memorial-park",
+  "version": "1.0.0",
+  "description": "3D Memorial Park with Cemetery, Galaxies and Multimedia",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  },
+  "keywords": [
+    "3d",
+    "memorial",
+    "cemetery",
+    "threejs",
+    "multimedia"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}
