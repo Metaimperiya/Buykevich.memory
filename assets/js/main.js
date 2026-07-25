@@ -1,26 +1,44 @@
+import { initScene } from './core/scene.js';
+import { initCemetery } from './cemetery/tombs.js';
+import { initFpsCamera } from './controls/fps-camera.js';
+
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Инициализация сцены из scene.js
-    const app = window.initCoreScene(); 
-    
-    // 2. Инициализация кладбища из tombs.js
-    if (window.initTombs) window.initTombs(app.scene);
+    const { container, scene, camera, renderer } = initScene();
+    const { earthGroups } = initCemetery(scene);
+    const cameraControls = initFpsCamera(container, camera);
 
-    // 3. Инициализация небесной галактики сверху
-    const galaxy = window.initGalaxy ? window.initGalaxy(app.scene) : null;
+    const fpsDisplay = document.getElementById('fpsDisplay');
+    const btnReset = document.getElementById('btnReset');
 
-    // 4. Инициализация управления из fps-camera.js и keyboard.js
-    if (window.initControls) window.initControls(app.camera, app.renderer.domElement);
-
-    // Главный цикл
-    function animate() {
-        requestAnimationFrame(animate);
-        const time = Date.now() * 0.002;
-        
-        if (galaxy) galaxy.update(time);
-        if (window.updateKeyboard) window.updateKeyboard(app.camera);
-
-        app.renderer.render(app.scene, app.camera);
+    if (btnReset) {
+        btnReset.addEventListener('click', () => {
+            if (cameraControls && cameraControls.resetCamera) {
+                cameraControls.resetCamera();
+            }
+        });
     }
 
-    animate();
+    let lastTime = performance.now();
+    let frameCount = 0;
+
+    function animate(time) {
+        requestAnimationFrame(animate);
+
+        if (cameraControls && cameraControls.update) {
+            cameraControls.update();
+        }
+
+        frameCount++;
+        if (time - lastTime >= 1000) {
+            if (fpsDisplay) {
+                fpsDisplay.textContent = `${frameCount} FPS`;
+            }
+            frameCount = 0;
+            lastTime = time;
+        }
+
+        renderer.render(scene, camera);
+    }
+
+    animate(performance.now());
 });
