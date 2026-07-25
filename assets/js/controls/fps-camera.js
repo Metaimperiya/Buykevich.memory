@@ -1,5 +1,3 @@
-import * as THREE from '../three.min.js';
-
 export function initFpsCamera(container, camera) {
     const euler = new THREE.Euler(0, 0, 0, 'YXZ');
     let pitch = 0, yaw = 0;
@@ -21,7 +19,7 @@ export function initFpsCamera(container, camera) {
         const sensitivity = 0.002;
         yaw -= e.movementX * sensitivity;
         pitch -= e.movementY * sensitivity;
-        pitch = Math.max(-1.5, Math.min(1.5, pitch)); // Ограничение взгляда вверх/вниз
+        pitch = Math.max(-1.5, Math.min(1.5, pitch));
         euler.set(pitch, yaw, 0, 'YXZ');
         camera.quaternion.setFromEuler(euler);
     });
@@ -35,7 +33,7 @@ export function initFpsCamera(container, camera) {
         if (camera.position.y < 0.5) camera.position.y = 0.5;
     }, { passive: false });
 
-    // Touch управление для телефонов
+    // Touch управление
     let isTouching = false, lastTouchX = 0, lastTouchY = 0;
     container.addEventListener('touchstart', (e) => {
         if (e.touches.length === 1) {
@@ -61,7 +59,6 @@ export function initFpsCamera(container, camera) {
 
     container.addEventListener('touchend', () => { isTouching = false; }, { passive: false });
 
-    // Сброс камеры на дефолт
     function resetCamera() {
         camera.position.set(0, 5, 40);
         pitch = 0; yaw = 0;
