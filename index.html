@@ -7,7 +7,7 @@
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="assets/css/style.css">
 
-    <!-- Стабильный CDN Three.js, который не режет Edge -->
+    <!-- Стабильный CDN Three.js без конфликтов -->
     <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
 </head>
 <body>
@@ -45,6 +45,7 @@
 
     <div id="canvas-container"></div>
 
-    <script type="module" src="./assets/js/main.js"></script>
+    <!-- Исправленный прямой импорт для Vercel -->
+    <script type="module" src="assets/js/main.js"></script>
 </body>
 </html>
