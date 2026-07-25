@@ -17,6 +17,8 @@ export function initScene() {
     if (container) {
         container.innerHTML = '';
         container.appendChild(renderer.domElement);
+    } else {
+        document.body.appendChild(renderer.domElement);
     }
 
     const ambientLight = new THREE.AmbientLight(0x2a2a5a, 2.5);
