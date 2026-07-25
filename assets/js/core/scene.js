@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 export function initScene() {
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
@@ -14,8 +16,10 @@ export function initScene() {
     renderer.shadowMap.enabled = true;
     renderer.setClearColor(0x05050e);
     
-    container.innerHTML = '';
-    container.appendChild(renderer.domElement);
+    if (container) {
+        container.innerHTML = '';
+        container.appendChild(renderer.domElement);
+    }
 
     const ambientLight = new THREE.AmbientLight(0x2a2a5a, 2.5);
     scene.add(ambientLight);
