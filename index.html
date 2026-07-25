@@ -4,15 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Memorial Park — Angelos City</title>
-    <!-- Отключаем запрос favicon, чтобы консоль не ругалась 404 -->
     <link rel="icon" href="data:,">
-    
-    <!-- Подключаем твои стили -->
     <link rel="stylesheet" href="assets/css/style.css">
+
+    <!-- Подключаем 100% целую библиотеку Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <!-- Интерфейс (HUD) -->
     <div class="ui-hud">
         [SYSTEM]: FPS_MEMORIAL_PARK<br>
         <span class="highlight">[GROUND]: CEMETERY</span><br>
@@ -20,28 +19,23 @@
         <span class="key">[FPS]: CLICK TO LOCK MOUSE</span>
     </div>
 
-    <!-- Прицел в центре экрана -->
     <div id="crosshair">+</div>
 
-    <!-- Инфо-панель для объектов -->
     <div class="grave-info" id="graveInfo">
         <div class="name" id="graveName">ИМЯ</div>
         <div class="dates" id="graveDates">📅 1945 — 2023</div>
         <div class="location" id="graveLocation">✦ ЗЕМЛЯ ✦</div>
     </div>
 
-    <!-- Подсказки по клавишам -->
     <div class="controls-hint">
         <span class="key">W A S D</span> — движение · <span class="key">Q</span> ↑ · <span class="key">E</span> ↓ · <span class="key">Shift</span> — бег
     </div>
 
-    <!-- Счетчик FPS и частиц -->
     <div id="status">
         <span id="fpsDisplay">60 FPS</span><br>
         <span id="particleCount">particles</span>
     </div>
 
-    <!-- Кнопки управления -->
     <div id="controls">
         <button id="btnReset">⟲</button>
         <button id="btnCandles" class="gold active">🕯️</button>
@@ -49,13 +43,9 @@
         <button id="btnFog" class="active">🌫️</button>
     </div>
 
-    <!-- Контейнер под 3D холст -->
     <div id="canvas-container"></div>
 
-    <!-- 1. Подключаем ЛОКАЛЬНЫЙ Three.js из твоей папки -->
-    <script src="assets/js/three.min.js"></script>
-
-    <!-- 2. Подключаем ТВОЙ main.js ПО ПРАВИЛЬНОМУ ПУТИ -->
+    <!-- Запускаем твой главный модуль -->
     <script type="module" src="assets/js/main.js"></script>
 </body>
 </html>
